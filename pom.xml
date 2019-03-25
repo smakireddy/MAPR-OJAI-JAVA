@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>MAPR-OJAI-JAVA</groupId>
+    <artifactId>chico-sample-programs</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <repositories>
+        <repository>
+            <id>mapr-releases</id>
+            <url>http://repository.mapr.com/maven/</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <mapr.library.version>6.1.0-mapr</mapr.library.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <artifactId>ojai</artifactId>
+            <groupId>org.ojai</groupId>
+            <!--<version>2.0.1-mapr-1804</version>-->
+            <version>3.0-mapr-1808</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-client</artifactId>
+            <version>1.1.8-mapr-1710</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>mapr-ojai-driver</artifactId>
+            <groupId>com.mapr.ojai</groupId>
+            <version>${mapr.library.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
