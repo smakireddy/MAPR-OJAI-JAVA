@@ -4,10 +4,7 @@ import com.mapr.chicos.model.*;
 import org.ojai.Document;
 import org.ojai.DocumentStream;
 import org.ojai.json.Json;
-import org.ojai.store.Connection;
-import org.ojai.store.DocumentMutation;
-import org.ojai.store.DocumentStore;
-import org.ojai.store.DriverManager;
+import org.ojai.store.*;
 import org.ojai.types.OTimestamp;
 
 import java.text.SimpleDateFormat;
@@ -19,6 +16,7 @@ public class OJAI_003_ChicosCustomerCRUD {
 
     private static Connection connection;
 
+
     public static void main(String[] args) {
 
         try {
@@ -26,22 +24,102 @@ public class OJAI_003_ChicosCustomerCRUD {
 
             findAllRecord();
 //
-            createCustomerRecord();
+//            createCustomerRecord();
 //
-            findByID("1+55003065");
+//            findByID("1+55003065");
 //
-//            appendTransactionSummary("1+123401562");
+            appendCustomerCoupon("1+55003065");
 //
-            updateSimpleRecord("1+55003057");
+//            updateCustomerRecord("1+55003057");
+
 //
-//            updateNestedRecord("1+123401562");
-//
-//            queryWithSelectCondition();
+            queryWithSelectCondition();
 
 
         } finally {
             closeConnection();
         }
+
+    }
+
+    private static void queryWithSelectCondition() {
+        System.out.println("===========Query with select and condition=============");
+
+        DocumentStream documentStream;
+        try (DocumentStore documentStore = connection.getStore(TABLE_PATH)) {
+
+            final QueryCondition queryCondition = connection.newCondition()
+                        .is("brand_id", QueryCondition.Op.GREATER_OR_EQUAL, 1)
+//                        .is("contact_email_pii[0].email_address", QueryCondition.Op.EQUAL,"abc@xyz.com")
+//                        .is("customer_coupon[0].coupon.brand_id", QueryCondition.Op.EQUAL, 5)
+                    .build();
+
+            final Query query = connection.newQuery()
+                    .select("_id","contact_email_pii[0].email_address","customer_coupon[0].coupon.brand_id")
+                    .where(queryCondition)
+                    .where("{\"$eq\": {\"contact_email_pii[0].email_address\": \"abc@xyz.com\"}}")
+                    .where("{\"$exists\":\"customer_coupon[0].coupon.brand_id\"}")
+                    .build();
+
+            documentStream = documentStore.find(query);
+        }
+        for (Document document:documentStream)
+              {
+                  System.out.println(document.asJsonString());
+
+
+        }
+
+
+
+    }
+
+    private static void appendCustomerCoupon(String id) {
+        System.out.println("===========Append Customer Coupon=============");
+
+        DocumentStore documentStore = connection.getStore(TABLE_PATH);
+
+        Document document = documentStore.findById(id);
+
+        if (document!= null){
+
+
+
+
+            Coupon coupon = new Coupon();
+            coupon.setBrandId(5);
+            coupon.setValidFrom("2/4/2019 12:00:00 AM");
+            coupon.setValidTo("3/3/2019 12:00:00 AM");
+
+
+            Campaign campaign = new Campaign();
+
+            campaign.setCampaignSk(555);
+
+            CustomerCoupon customerCoupon = new CustomerCoupon();
+
+            customerCoupon.setCouponId(555);
+            customerCoupon.setDateLastModified(new Date().toString());
+
+            customerCoupon.setCoupon(coupon);
+            customerCoupon.setCampaign(campaign);
+
+
+            Document document1 = Json.newDocument(customerCoupon);
+
+            DocumentMutation documentMutation = connection.newMutation()
+                    .append("customer_coupon",Collections.singletonList(document1));
+
+            documentStore.update(id,documentMutation);
+            documentStore.flush();
+            documentStore.close();
+
+
+        } else {
+            System.out.println("Document is not found for _id: "+id);
+        }
+
+
 
     }
 
@@ -133,7 +211,7 @@ public class OJAI_003_ChicosCustomerCRUD {
 
     }
 
-    private static void updateSimpleRecord(String id) {
+    private static void updateCustomerRecord(String id) {
         System.out.println("===========Update Simple Record=============");
 
         try (DocumentStore documentStore = connection.getStore(TABLE_PATH)) {
@@ -165,10 +243,8 @@ public class OJAI_003_ChicosCustomerCRUD {
 
 
                 documentStore.update(id, documentMutation);
-
-//                documentStore.
-
                 documentStore.flush();
+
             }else {
                 System.out.println("Document not found with _id: " + id);
             }

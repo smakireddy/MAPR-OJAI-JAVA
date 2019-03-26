@@ -40,10 +40,30 @@ public class OJAI_002_ChicosSummaryCRUD {
 
 //            queryWithSelectCondition();
 
+            addColumetoExistingRow("1+123401565");
+
 
         } finally {
             closeConnection();
         }
+
+    }
+
+    private static void addColumetoExistingRow(String id) {
+        System.out.println("===========Add Column to Existing Record=============");
+
+        final DocumentStore documentStore = connection.getStore(TABLE_PATH);
+
+        QueryCondition queryCondition = connection.newCondition()
+                .notExists("newColumn")
+                .close();
+
+        DocumentMutation documentMutation = connection.newMutation()
+                .set("newColumn","newValue");
+
+        documentStore.checkAndUpdate(id,queryCondition,documentMutation);
+
+        documentStore.close();
 
     }
 
