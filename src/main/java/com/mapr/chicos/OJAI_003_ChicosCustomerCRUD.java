@@ -1,7 +1,9 @@
 package com.mapr.chicos;
 
+import com.mapr.chicos.model.*;
 import org.ojai.Document;
 import org.ojai.DocumentStream;
+import org.ojai.json.Json;
 import org.ojai.store.Connection;
 import org.ojai.store.DocumentMutation;
 import org.ojai.store.DocumentStore;
@@ -9,9 +11,7 @@ import org.ojai.store.DriverManager;
 import org.ojai.types.OTimestamp;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 public class OJAI_003_ChicosCustomerCRUD {
 
@@ -26,9 +26,9 @@ public class OJAI_003_ChicosCustomerCRUD {
 
             findAllRecord();
 //
-//            createWarehouseRecord("1+123401562");
+            createCustomerRecord();
 //
-            findByID("1+55003057");
+            findByID("1+55003065");
 //
 //            appendTransactionSummary("1+123401562");
 //
@@ -42,6 +42,94 @@ public class OJAI_003_ChicosCustomerCRUD {
         } finally {
             closeConnection();
         }
+
+    }
+
+    private static void createCustomerRecord() {
+        System.out.println("===========Create Customer Record=============");
+
+
+        //Contact email
+        ContactEmailPius contactEmailPius = new ContactEmailPius();
+
+        contactEmailPius.setEmailAddress("abc@xyz.com");
+        contactEmailPius.setDateLastModified(new Date().toString());
+        contactEmailPius.setDepricatedEmailId(123456);
+        contactEmailPius.setMain(true);
+
+        List<ContactEmailPius> contactEmailPiusList = new ArrayList<>();
+        contactEmailPiusList.add(contactEmailPius);
+
+
+        //Coupon record
+        Coupon coupon = new Coupon();
+
+        coupon.setBrandId(1);
+        coupon.setTreatmentCode("111111");
+        coupon.setValidFrom("5/4/2016 12:00:00 AM");
+        coupon.setValidTo("6/4/2016 12:00:00 AM");
+
+        //Campaign
+        Campaign campaign = new Campaign();
+
+        campaign.setCampaignSk(1111);
+        campaign.setCampaignStartDate("ABC Campaign");
+        campaign.setCampaignType(1);
+
+        //Customer Coupon
+        CustomerCoupon customerCoupon = new CustomerCoupon();
+
+        customerCoupon.setCouponId(1111);
+        customerCoupon.setLastUsedStore("xyz store");
+        customerCoupon.setUsedCount(1);
+
+        customerCoupon.setCoupon(coupon);
+        customerCoupon.setCampaign(campaign);
+
+        List<CustomerCoupon> customerCouponList = new ArrayList<>();
+        customerCouponList.add(customerCoupon);
+
+        //Customer Loyalty type
+
+        LoyaltyType loyaltyType = new LoyaltyType();
+
+        loyaltyType.setLoyaltyTypeCode("ABC");
+        loyaltyType.setLoyaltyTypeDesc("ABC Desc");
+
+        //Customer Loyalty
+
+        CustomerLoyalty customerLoyalty = new CustomerLoyalty();
+
+        customerLoyalty.setLoyaltyTypeId(1);
+        customerLoyalty.setLifetimeSpend(1234.56);
+        customerLoyalty.setLoyaltyFlag(true);
+
+        customerLoyalty.setLoyaltyType(loyaltyType);
+
+        List<CustomerLoyalty> customerLoyaltyList = new ArrayList<>();
+        customerLoyaltyList.add(customerLoyalty);
+
+        //Customer
+        Customer customer = new Customer();
+
+        customer.setBrandId(1);
+        customer.setCustomerNo(55003065);
+        customer.setId(customer.getBrandId().toString()+"+"+customer.getCustomerNo().toString());
+        customer.setFirstName("Som");
+        customer.setLastName("M");
+        customer.setContactEmailPii(contactEmailPiusList);
+        customer.setCustomerCoupon(customerCouponList);
+        customer.setCustomerLoyalty(customerLoyaltyList);
+
+
+
+        DocumentStore documentStore = connection.getStore(TABLE_PATH);
+
+        Document document = Json.newDocument(customer);
+
+        documentStore.insertOrReplace(document);
+
+        documentStore.close();
 
     }
 
@@ -65,16 +153,17 @@ public class OJAI_003_ChicosCustomerCRUD {
 //
 //                System.out.println(simpleDateFormat.format(calendar.getTime()));
 
-                System.out.println("inside if ");
+
+
 
                 DocumentMutation documentMutation = connection.newMutation()
 //                        .set("birth_month", 12)
-                        .set("last_name","Bond-1")
-//                        .set("contact_mail_pii[0].date_valid_to", OTimestamp.parse(simpleDateFormat.format(calendar.getTime())))
-//                        .set("contact_mail_pii[0].opt_out", true)
-                        ;
+                        .set("last_name","Bond")
+                        .set("contact_mail_pii[0].date_valid_to", new Date().toString())
+                        .set("contact_mail_pii[0].opt_out", true)
+                        .set("customer_loyalty[0].loyalty_type.loyalty_type_desc","Updated XYZ");
 
-                System.out.println("after mutations");
+
                 documentStore.update(id, documentMutation);
 
 //                documentStore.
