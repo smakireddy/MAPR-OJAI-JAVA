@@ -26,13 +26,13 @@ public class OJAI_002_ChicosSummaryCRUD {
         try {
             initializeConnection();
 
-            findAllRecord();
+//            findAllRecord();
 
 //            createWarehouseRecord("1+123401565");
 
-//            findByID("1+123401563");
+            findByID("1+123401565");
 
-//            appendTransactionSummary("1+123401565");
+            appendTransactionSummary("1+123401565");
 
 //            updateSimpleRecord("1+123401562");
 
@@ -40,7 +40,9 @@ public class OJAI_002_ChicosSummaryCRUD {
 
 //            queryWithSelectCondition();
 
-            addColumetoExistingRow("1+123401565");
+//            addColumetoExistingRow("1+123401565");
+
+            deleteColumnsOnExistingRow("1+123401565");
 
 
         } finally {
@@ -49,21 +51,44 @@ public class OJAI_002_ChicosSummaryCRUD {
 
     }
 
+    private static void deleteColumnsOnExistingRow(String id) {
+        System.out.println("===========Delete Column On Existing Row=============");
+
+        try (DocumentStore documentStore = connection.getStore(TABLE_PATH)) {
+
+//            Simple delete
+//            DocumentMutation documentMutation = connection.newMutation()
+//                    .delete("newColumn");
+
+//            Nested Array Column Delete
+            DocumentMutation documentMutation = connection.newMutation()
+                    .delete("sas_whouse_cm_item_brand_chan_trans_sum[0].department_code");
+
+            documentStore.update(id, documentMutation);
+
+        }
+
+
+    }
+
     private static void addColumetoExistingRow(String id) {
         System.out.println("===========Add Column to Existing Record=============");
 
-        final DocumentStore documentStore = connection.getStore(TABLE_PATH);
+        try (DocumentStore documentStore = connection.getStore(TABLE_PATH)) {
 
-        QueryCondition queryCondition = connection.newCondition()
-                .notExists("newColumn")
-                .close();
+            QueryCondition queryCondition = connection.newCondition()
+                    .notExists("newColumn,sas_whouse_cm_item_brand_chan_trans_sum[0].phoneNumber")
+                    .build();
 
-        DocumentMutation documentMutation = connection.newMutation()
-                .set("newColumn","newValue");
+            DocumentMutation documentMutation = connection.newMutation()
+                    .set("sas_whouse_cm_item_brand_chan_trans_sum[0].phoneNumber", 1234567890)
+                    .set("newColumn","newValue");
 
-        documentStore.checkAndUpdate(id,queryCondition,documentMutation);
+            documentStore.checkAndUpdate(id, queryCondition, documentMutation);
 
-        documentStore.close();
+
+//        documentStore.update(id,documentMutation);
+        }
 
     }
 
